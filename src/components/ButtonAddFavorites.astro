@@ -1,0 +1,60 @@
+---
+import Heart from '@assets/heart.svg';
+import HeartFill from '@assets/heart-fill.svg';
+
+interface Props {
+    id: number;
+    name: string;
+};
+
+const { id, name } = Astro.props;
+---
+
+<button id="button" pokemon-data={ JSON.stringify({ id, name }) }  class="active:scale-90 transition-[scale]">
+    <Heart id="button_heart" class="size-8"/>
+    <HeartFill id="button_heart-fill" class="size-8"/>
+</button>
+
+<script>
+    document.addEventListener('astro:page-load', ()=> {
+        const storage =  JSON.parse( localStorage.getItem('favorites') ?? '[]' ) as [{ id: number, name: string }];
+        const $button = document.querySelector('#button') as HTMLButtonElement;
+        const $heart = document.querySelector('#button_heart');
+        const $heartFill = document.querySelector('#button_heart-fill');
+
+        const { id } = JSON.parse($button.getAttribute('pokemon-data') ?? '');
+
+        if(storage.find(( pokemon )=> pokemon.id === id)) {
+            $heart?.classList.add('hidden');
+        } else {
+            $heartFill?.classList.add('hidden');
+        }
+    });
+
+    document.addEventListener('astro:page-load', ()=> {
+        const $button = document.querySelector('#button') as HTMLButtonElement;
+        const $heart = document.querySelector('#button_heart');
+        const $heartFill = document.querySelector('#button_heart-fill');
+
+        const addOrRemoveToLocalStorage = ( pokemonID: number, pokemonName: string )=> {
+            const storage =  JSON.parse( localStorage.getItem('favorites') ?? '[]' ) as [{ id: number, name: string }];
+            
+            if(storage.find(({ id })=> id === pokemonID)) {
+                const newStorage = storage.filter(({ id })=> id !== pokemonID);
+                localStorage.setItem('favorites', JSON.stringify( newStorage ));
+            } else {
+                storage.push({ id: pokemonID, name: pokemonName });
+                localStorage.setItem('favorites', JSON.stringify( storage ));
+            }
+        }
+
+        $button.addEventListener('click', ()=> {
+            const { id, name } = JSON.parse($button.getAttribute('pokemon-data') ?? '');
+    
+            addOrRemoveToLocalStorage( id, name );
+
+            $heart?.classList.toggle('hidden');
+            $heartFill?.classList.toggle('hidden');
+        });
+    });
+</script>

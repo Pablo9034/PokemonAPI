@@ -1,0 +1,54 @@
+---
+import type { GetStaticPaths } from 'astro';
+
+import Layout from '@layouts/Layout.astro';
+import ButtonAddFavorites from '@components/ButtonAddFavorites.astro';
+import PokemonCard from '@components/PokemonCard.astro';
+
+import Back from '@assets/back.svg';
+
+import { APIResponseSchema } from '@interfaces/pokemon_schemas';
+
+export const getStaticPaths = (async () => {
+    const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=151');
+    const data = APIResponseSchema.parse(await response.json());
+
+    return [
+        ...data.results.map(({ name, url })=> {
+            const id = Number(url.split('/').at(-2));
+
+            return { 
+                params: { name }, 
+                props: { id } 
+            };
+        })
+    ];
+}) satisfies GetStaticPaths;
+
+const { name } = Astro.params;
+const { id } = Astro.props;
+---
+
+<Layout 
+    title={ `PokemonAPI | ${ name[0].toUpperCase() + name.slice(1) }` }
+    description={ `View detailed about ${ name }'s Pokémon with vivid images and authentic sounds.` }
+    logo={ `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${ id }.png` }>
+    <section>
+        <div class="flex justify-between items-center">
+            <a href="javascript:history.back()" class="font-bold flex">
+                <Back/> Go Back
+            </a>
+
+            <div>
+                <ButtonAddFavorites id={ id } name={ name } client:load/>
+            </div>
+        </div>
+
+        <PokemonCard id={ id } name={ name } isBig>
+            <audio controls>
+                <source src={ `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${ id }.ogg` }/>
+                Your Browser no soporta
+            </audio>
+        </PokemonCard>
+    </section>
+</Layout>

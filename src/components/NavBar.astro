@@ -1,0 +1,24 @@
+---
+const sections = [
+    { label: "Pokemons", url: "/pokemons/1" },
+    { label: "Favorites", url: "/favorites" },
+    { label: "About Project", url: "/about" }
+];
+---
+
+<nav>
+    <ul class="py-3 flex justify-evenly lg:justify-center lg:gap-5 font-bold uppercase">
+        {
+            sections.map(({ label, url })=> (
+                <li>
+                    <a href={ url }>{ label }</a>
+                    {
+                        Astro.url.pathname.includes(url.split('/').at(1) as string)
+                            ? <div transition:name="selector" class="border-t-2"></div>
+                            : <div></div>
+                    }
+                </li>
+            ))
+        }
+    </ul>
+</nav>
